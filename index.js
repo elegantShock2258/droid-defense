@@ -1,5 +1,18 @@
 let gameManager = {}
 
+let player = null
+let playerRadius = 90
+let guideLine = null
+
+let bullets = []
+let bulletsDirection = null
+
+let bulletCounter = 0
+let bulletsMax = 30
+
+let scale = 18
+
+
 
 class GameObject {
     constructor(x, y, width, height, color, svg = "") {
@@ -37,8 +50,29 @@ class GameObject {
 }
 
 class Bullet extends GameObject {
+
+    constructor(x, y, width, height, color, svg = "", direction = [0, -20]) {
+        super(x, y, width, height, color, svg)
+        this.direction = direction
+    }
+
+
     draw(ctx) {
         ctx.fillStyle = "#90f542"
+
+        ctx.fillRect(this.x, this.y, this.width, this.height)
+    }
+
+    move(ctx) {
+        super.move(20*this.direction[0], 20*this.direction[1], ctx)
+    }
+
+
+}
+
+class Alien extends GameObject {
+    draw(ctx) {
+        this.color = "#ff0000"
         ctx.fillRect(this.x, this.y, this.width, this.height)
     }
 }
@@ -88,16 +122,20 @@ board.height = window.innerHeight * ratio;
 board.style.width = window.innerWidth + "px";
 board.style.height = window.innerHeight + "px";
 
+document.addEventListener('mousemove', (e) => {
+    let mouse = [e.clientX - player.x, e.clientY - player.y]
+    let mouseMod = Math.sqrt(mouse[0] * mouse[0] + mouse[1] * mouse[1])
+    mouse[0] /= mouseMod
+    mouse[1] /= mouseMod
 
-let player = null
-let playerRadius = 90
-let guideLine = null
-let bullets = null
-let scale = 18
+    bulletsDirection = mouse
+    console.log(bulletsDirection)
+})
+
 function gameSetup() {
     gameManager.bg = "#101010"
     console.log(ctx)
-    guideLine = new GameObject(90, board.height - playerRadius  , board.width - 180, 3, "#303030")
+    guideLine = new GameObject(90, board.height - playerRadius, board.width - 180, 3, "#303030")
     player = new Player(board.width / 2, board.height - playerRadius, playerRadius, playerRadius, guideLine)
     console.log(player)
 
@@ -116,7 +154,8 @@ function gameSetup() {
         if (e.key === "ArrowRight" || e.key === "a" || e.key === "l") {
             player.move(scale, 0, ctx)
         } if (e.key === " ") {
-            bullets.push(new Bullet(player.x + player.width / 2, player.y - 10, 5, 10))
+            bulletCounter = (bulletCounter + 1) % bulletsMax
+            bullets[bulletCounter] = (new Bullet(player.x + player.width / 2, player.y - 10, 5, 10, "", "", bulletsDirection))
         }
 
     })
@@ -131,11 +170,13 @@ function gameLoop() {
     guideLine.draw(ctx)
     player.draw(ctx)
 
-    bullets.forEach(function (bullet) {
+    for (let i = 0; i < bullets.length; i++) {
+        let bullet = bullets[i]
         if (bullet != "") {
-            bullet.move(0, -20, ctx)
+            bullet.move(ctx)
+            if (bullet.y < 0) bullets[i] = ""
         }
-    })
+    }
 }
 
 function gameInit() {
