@@ -8,7 +8,7 @@ let bullets = []
 let bulletsDirection = null
 
 let bulletCounter = 0
-let bulletsMax = 1000
+let bulletsMax = 30
 
 let scale = 18
 
@@ -17,7 +17,7 @@ let y0 = -1
 let x00 = -1
 let y00 = -1
 
-
+let aliens = []
 
 class GameObject {
     constructor(x, y, width, height, color, svg = "") {
@@ -69,7 +69,7 @@ class Bullet extends GameObject {
     }
 
     move(ctx) {
-        super.move(20*this.direction[0],  20*this.direction[1], ctx)
+        super.move(20 * this.direction[0], 20 * this.direction[1], ctx)
     }
 
 
@@ -77,8 +77,11 @@ class Bullet extends GameObject {
 
 class Alien extends GameObject {
     draw(ctx) {
-        this.color = "#ff0000"
+        ctx.fillStyle = this.color
         ctx.fillRect(this.x, this.y, this.width, this.height)
+    }
+    move(ctx) {
+        super.move(0, 7, ctx)
     }
 }
 
@@ -162,7 +165,10 @@ function gameSetup() {
     guideLine = new GameObject(90, board.height - playerRadius, board.width - 180, 3, "#303030")
     player = new Player(board.width / 2, board.height - playerRadius, playerRadius, playerRadius, guideLine)
     console.log(player)
-
+    document.onclick = (e) => {
+        bulletCounter = (bulletCounter + 1) % bulletsMax
+        bullets[bulletCounter] = (new Bullet(player.x, player.y - 10, 5, 10, "", "", bulletsDirection))
+    }
     document.addEventListener('keydown', async function (e) {
         if (e.key === "ArrowLeft" || e.key === "d" || e.key === "h") {
             player.move(-scale, 0, ctx)
@@ -179,13 +185,23 @@ function gameSetup() {
             player.move(scale, 0, ctx)
         } if (e.key === " ") {
             bulletCounter = (bulletCounter + 1) % bulletsMax
-            bullets[bulletCounter] = (new Bullet(player.x , player.y - 10, 5, 10, "", "", bulletsDirection))
+            bullets[bulletCounter] = (new Bullet(player.x, player.y - 10, 5, 10, "", "", bulletsDirection))
         }
 
     })
 
     //chekcing
     bullets = Array(20).fill("")
+    aliens = Array(20).fill("")
+
+    for (let i = 0; i < 10; i++) {
+        aliens[i] = new Alien(90 * Math.abs(i - 5) + board.width / 2.5, 40, 30, 20, "#ffffff", "")
+    }
+    for (let i = 0; i < 10; i++) {
+        aliens[10 + i] = new Alien(90 * Math.abs(i - 5) + board.width / 2.5, 80, 30, 20, "#ffffff", "")
+    }
+
+
 }
 
 function gameLoop() {
@@ -194,13 +210,27 @@ function gameLoop() {
     guideLine.draw(ctx)
     player.draw(ctx)
 
+    for (let i = 0; i < aliens.length; i++) {
+        if (aliens[i].color != gameManager.bg) aliens[i].move(ctx)
+    }
+
     for (let i = 0; i < bullets.length; i++) {
         let bullet = bullets[i]
         if (bullet != "") {
             bullet.move(ctx)
             if (bullet.y < 0) bullets[i] = ""
         }
+
+        let collide = false
+        for (let i = 0; i < aliens.length; i++) {
+            if (aliens[i].collides(bullet)) {
+                collide = true
+                aliens.splice(i, 1)
+            }
+        }
     }
+
+
 }
 
 function gameInit() {
