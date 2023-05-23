@@ -8,9 +8,14 @@ let bullets = []
 let bulletsDirection = null
 
 let bulletCounter = 0
-let bulletsMax = 30
+let bulletsMax = 1000
 
 let scale = 18
+
+let x0 = -1
+let y0 = -1
+let x00 = -1
+let y00 = -1
 
 
 
@@ -64,7 +69,7 @@ class Bullet extends GameObject {
     }
 
     move(ctx) {
-        super.move(20*this.direction[0], 20*this.direction[1], ctx)
+        super.move(20*this.direction[0],  20*this.direction[1], ctx)
     }
 
 
@@ -122,14 +127,33 @@ board.height = window.innerHeight * ratio;
 board.style.width = window.innerWidth + "px";
 board.style.height = window.innerHeight + "px";
 
+document.body.style.cursor = "none"
 document.addEventListener('mousemove', (e) => {
+    if (x0 != -1) {
+        // clear last mouse pos nd line
+        ctx.fillStyle = "#101010"
+        ctx.beginPath()
+        ctx.arc(x0, y0, 20 / 2, 0, 2 * Math.PI)
+        ctx.fill()
+
+    }
+
+
     let mouse = [e.clientX - player.x, e.clientY - player.y]
     let mouseMod = Math.sqrt(mouse[0] * mouse[0] + mouse[1] * mouse[1])
     mouse[0] /= mouseMod
     mouse[1] /= mouseMod
 
     bulletsDirection = mouse
-    console.log(bulletsDirection)
+
+    ctx.fillStyle = "#0000ff80"
+    ctx.beginPath()
+    ctx.arc(e.clientX, e.clientY, 20 / 2, 0, 2 * Math.PI)
+    ctx.fill()
+
+    x0 = e.clientX
+    y0 = e.clientY
+
 })
 
 function gameSetup() {
@@ -155,7 +179,7 @@ function gameSetup() {
             player.move(scale, 0, ctx)
         } if (e.key === " ") {
             bulletCounter = (bulletCounter + 1) % bulletsMax
-            bullets[bulletCounter] = (new Bullet(player.x + player.width / 2, player.y - 10, 5, 10, "", "", bulletsDirection))
+            bullets[bulletCounter] = (new Bullet(player.x , player.y - 10, 5, 10, "", "", bulletsDirection))
         }
 
     })
@@ -181,7 +205,7 @@ function gameLoop() {
 
 function gameInit() {
     gameSetup()
-    setInterval(gameLoop, 100)
+    setInterval(gameLoop, 90)
 }
 
 gameInit()
