@@ -36,7 +36,12 @@ class GameObject {
     }
 }
 
-
+class Bullet extends GameObject {
+    draw(ctx) {
+        ctx.fillStyle = "#90f542"
+        ctx.fillRect(this.x, this.y, this.width, this.height)
+    }
+}
 
 class Player extends GameObject {
     constructor(x, y, width, height, color, svg = "", guideLine) {
@@ -48,18 +53,24 @@ class Player extends GameObject {
     shoot() {
         console.log("shoot!")
     }
-
-    
-    
+    draw(ctx) {
+        ctx.fillStyle = this.color
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI)
+        ctx.fill()
+    }
     move(dx, dy, ctx) {
+        ctx.beginPath()
         ctx.fillStyle = gameManager.bg
-        ctx.fillRect(this.x, this.y, this.width, this.height)
+        // ctx.fillRect(this.x, this.y, this.width, this.height)
+        ctx.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI)
+        ctx.fill()
         let maximumX = (this.x + dx) < (guideLine.width + guideLine.x)
         let minimumX = (this.x + dx > 90)
         this.x = maximumX && minimumX ? this.x + dx : this.x
+        this.y += dy
         if (!maximumX || !minimumX) guideLine.color = "aliceblue"
         console.log(this.x, guideLine.width - 90)
-        this.y += dy
         guideLine.draw(ctx)
         if (!maximumX || !minimumX) guideLine.color = "#303030"
         this.draw(ctx)
@@ -79,14 +90,15 @@ board.style.height = window.innerHeight + "px";
 
 
 let player = null
+let playerRadius = 90
 let guideLine = null
+let bullets = null
 let scale = 18
-
 function gameSetup() {
     gameManager.bg = "#101010"
     console.log(ctx)
-    guideLine = new GameObject(90, board.height - 60 + 15, board.width - 180, 3, "#303030")
-    player = new Player(board.width / 2, board.height - 60, 30, 30, guideLine)
+    guideLine = new GameObject(90, board.height - playerRadius  , board.width - 180, 3, "#303030")
+    player = new Player(board.width / 2, board.height - playerRadius, playerRadius, playerRadius, guideLine)
     console.log(player)
 
     document.addEventListener('keydown', async function (e) {
@@ -103,9 +115,14 @@ function gameSetup() {
         }
         if (e.key === "ArrowRight" || e.key === "a" || e.key === "l") {
             player.move(scale, 0, ctx)
+        } if (e.key === " ") {
+            bullets.push(new Bullet(player.x + player.width / 2, player.y - 10, 5, 10))
         }
 
     })
+
+    //chekcing
+    bullets = Array(20).fill("")
 }
 
 function gameLoop() {
@@ -113,11 +130,17 @@ function gameLoop() {
     ctx.fillRect(0, 0, board.width, board.height);
     guideLine.draw(ctx)
     player.draw(ctx)
+
+    bullets.forEach(function (bullet) {
+        if (bullet != "") {
+            bullet.move(0, -20, ctx)
+        }
+    })
 }
 
 function gameInit() {
     gameSetup()
-    requestAnimationFrame(gameLoop)
+    setInterval(gameLoop, 100)
 }
 
 gameInit()
