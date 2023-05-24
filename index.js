@@ -28,6 +28,8 @@ let moved = false
 
 let displacement = [0, 0]
 
+let score = 0
+
 class GameObject {
     constructor(x, y, width, height, color, svg = "") {
         this.x = x
@@ -41,10 +43,6 @@ class GameObject {
     draw(ctx) {
         ctx.fillStyle = this.color
         ctx.fillRect(this.x, this.y, this.width, this.height)
-        // else {
-        //     let path = new Path2D(svg)
-        //     ctx.stroke(path)
-        // }
     }
 
     move(dx, dy, ctx) {
@@ -170,7 +168,6 @@ function drawCrossHair(ctx) {
 
     bulletsDirection = mouse
 
-    player.moveHead(mouse, ctx)
 
     console.log(mouseX, mouseY, x0, y0)
     ctx.fillStyle = "#0000ff80"
@@ -257,6 +254,11 @@ function gameLoop() {
                 if (aliens[j].collides(bullet)) {
                     aliens.splice(j, 1)
                     bullets[i] = ""
+
+                    score++
+                    document.getElementById("score").innerText = score
+
+                    break
                 }
             }
         }
