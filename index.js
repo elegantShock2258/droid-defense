@@ -10,7 +10,7 @@ let bulletsDirection = null
 let bulletCounter = 0
 let bulletsMax = 30
 
-let scale = 8
+let scale = 2
 
 let mouseX = 0
 let mouseY = 1
@@ -25,6 +25,8 @@ let aliens = []
 
 let paused = false
 let moved = false
+
+let displacement = [0, 0]
 
 class GameObject {
     constructor(x, y, width, height, color, svg = "") {
@@ -138,8 +140,6 @@ class Player extends GameObject {
         if (!maximumX || !minimumX) guideLine.color = "#303030"
         this.draw(ctx)
     }
-    moveHead(mouse, ctx) {
-    }
 }
 
 let board = document.getElementById('board')
@@ -163,17 +163,6 @@ document.addEventListener('mousemove', (e) => {
 
 function drawCrossHair(ctx) {
     requestAnimationFrame(gameLoop)
-    // if (x0 != -1) {
-    //     // clear last mouse pos nd line
-    //     ctx.fillStyle = "#101010"
-    //     ctx.strokeStyle = gameManager.bg
-    //     ctx.beginPath()
-    //     ctx.arc(x0, y0, 15, 0, 2 * Math.PI)
-    //     ctx.stroke()
-    //     ctx.fill()
-
-    // }
-
     let mouse = [mouseX - player.x, mouseY - player.y]
     let mouseMod = Math.sqrt(mouse[0] * mouse[0] + mouse[1] * mouse[1])
     mouse[0] /= mouseMod
@@ -183,7 +172,7 @@ function drawCrossHair(ctx) {
 
     player.moveHead(mouse, ctx)
 
-    console.log(mouseX,mouseY,x0,y0)
+    console.log(mouseX, mouseY, x0, y0)
     ctx.fillStyle = "#0000ff80"
     ctx.strokeStyle = gameManager.bg
     ctx.beginPath()
@@ -207,27 +196,22 @@ function gameSetup() {
     }
     document.addEventListener('keydown', async function (e) {
         if (e.key === "ArrowLeft" || e.key === "a" || e.key === "h") {
-            !paused ? player.move(-scale, 0, ctx) : null
+            if (!paused) { displacement = [-scale, 0] }
         }
         if (e.key === "ArrowDown" || e.key === "s" || e.key === "j") {
             if (!paused) {
-                guideLine.move(0, scale / 2, ctx)
-                player.move(0, scale / 2, ctx)
+                displacement = [0, scale]
             }
         }
         if (e.key === "ArrowUp" || e.key === "w" || e.key === "k") {
             if (!paused) {
-                guideLine.move(0, -scale / 2, ctx)
-                player.move(0, -scale / 2, ctx)
+                displacement = [0, -scale]
             }
         }
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "l") {
-            !paused ? player.move(scale, 0, ctx) : null
-        } if (e.key === " ") {
-            bulletCounter = (bulletCounter + 1) % bulletsMax
-            bullets[bulletCounter] = (new Bullet(player.rectCordX, player.rectCordY - 10, 5, 10, "", "", bulletsDirection))
+            if (!paused) { displacement = [scale, 0] }
         }
-
+        console.log(displacement)
     })
 
     //chekcing
@@ -261,7 +245,6 @@ function gameLoop() {
 
         for (let i = 0; i < bullets.length; i++) {
             let bullet = bullets[i]
-            let clear = false
             if (bullet != "" && bullet != undefined) {
                 bullet.move(ctx)
                 if (bullet.y < 0) {
@@ -277,10 +260,10 @@ function gameLoop() {
                 }
             }
         }
-
+        player.move(displacement[0], displacement[1],ctx)
+        drawCrossHair(ctx)
     }
 
-    drawCrossHair(ctx)
     // requestAnimationFrame(gameLoop)
 }
 
