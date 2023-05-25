@@ -1,6 +1,7 @@
 let gameManager = {}
 
 let player = null
+let homeBase = null
 let playerRadius = 90
 let guideLine = null
 
@@ -29,6 +30,7 @@ let moved = false
 let displacement = [0, 0]
 
 let score = 0
+let Health = 100
 
 class GameObject {
     constructor(x, y, width, height, color, svg = "") {
@@ -214,6 +216,9 @@ function gameSetup() {
     console.log(ctx)
     guideLine = new GameObject(90, board.height - playerRadius, board.width - 180, 3, "#303030")
     player = new Player(board.width / 2, board.height - playerRadius, playerRadius, playerRadius, guideLine)
+    homeBase = new GameObject(board.width - 400, board.height - 250, 150, 150, "green", "")
+
+
     console.log(player)
     document.onclick = (e) => {
         bulletCounter = (bulletCounter + 1) % bulletsMax
@@ -244,8 +249,6 @@ function gameSetup() {
     aliens = Array(20).fill("")
     for (let j = 1; j <= 2; j++) {
         for (let i = 0; i < 10; i++) {
-            let rndX = (Math.floor(4 * Math.random() % 2 == 0) ? 1 : -1) * (100 * Math.random() + (Math.floor(3 * Math.random()) % 2 == 0) ? board.width : 0)
-            let rndY = (Math.floor(4 * Math.random() % 2 == 0) ? 1 : -1) * (100 * Math.random() + (Math.floor(3 * Math.random()) % 2 == 0) ? board.height : 0)
             // aliens[i + 10 * (j - 1)] = new Alien(90 * Math.abs(i - 5) + board.width / 2.5, 40 * j, 30, 20, "#ffffff", "")
             aliens[i + 10 * (j - 1)] = new Alien(board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
@@ -254,26 +257,49 @@ function gameSetup() {
 
 
 }
-function drawNavBar(score, healthPer = 100, ctx) {
+function drawNavBar(score,  ctx) {
     ctx.font = "40px mcfont"
     ctx.fillStyle = "white"
     ctx.fillText("Health: ", 10, 40)
+
+    ctx.fillStyle = "red"
+    ctx.fillRect(190, 15, Health * 4, 25)
+
+    ctx.font = "40px mcfont"
+    ctx.fillStyle = "white"
+    ctx.fillText(`Score: ${score}`, board.width - 200, 40)
+
+    // draw "HOME" text at home
+
+
+    ctx.font = "40px mcfont"
+    ctx.fillStyle = "white"
+    ctx.fillText(`HOME`, homeBase.x + homeBase.width / 6, homeBase.y + homeBase.height / 2)
+
+
 }
 function gameLoop() {
     if (!paused) {
-        let healthPer = 100
         ctx.fillStyle = gameManager.bg
         ctx.fillRect(0, 0, board.width, board.height);
         player.draw(ctx)
 
-        drawNavBar(score, healthPer, ctx)
-        let moveX = 2.8
+
+        // draw home base
+        homeBase.draw(ctx)
+
+        if (Health == 0) loseGame()
+
         //collision
         for (let i = 0; i < aliens.length; i++) {
             if (aliens[i].color != gameManager.bg) {
-                aliens[i].move([player.x, player.y], ctx)
-                if (aliens[i].collides(guideLine) || aliens[i].collides(player)) {
+                aliens[i].move([homeBase.x, homeBase.y], ctx)
+                if (aliens[i].collides(player)) {
                     loseGame()
+                }
+                else if (aliens[i].collides(homeBase)) {
+                    if (Health != 0) Health -= 2
+                    else if (Health == 0) loseGame()
                 }
             }
         }
@@ -300,14 +326,14 @@ function gameLoop() {
         }
         player.move(displacement[0], displacement[1], ctx)
         drawCrossHair(ctx)
+
+        drawNavBar(score, ctx)
     }
 
-    // requestAnimationFrame(gameLoop)
 }
 
 function gameInit() {
     gameSetup()
-    // setInterval(gameLoop, 90)
     requestAnimationFrame(gameLoop)
 }
 
