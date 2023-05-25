@@ -132,7 +132,7 @@ class Player extends GameObject {
 
     rotate(x = -1, y = -1, ctx) {
         //clear img
-        ctx.fillStyle = "red"
+        ctx.fillStyle = gameManager.bg
         ctx.beginPath()
         ctx.arc(this.x, this.y + this.height / 2, this.width / 1.3, 0, 2 * Math.PI)
         ctx.fill()
