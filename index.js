@@ -32,6 +32,8 @@ let displacement = [0, 0]
 let score = 0
 let Health = 100
 
+let waveNumber = 1
+
 // TODO:
 // add a trail glow animation when the player moves
 // add a roataion animation when it moves
@@ -79,13 +81,10 @@ class GameObject {
 }
 
 class Bullet extends GameObject {
-
     constructor(x, y, width, height, color, svg = "", direction = [0, -20]) {
         super(x, y, width, height, color, svg)
         this.direction = direction
     }
-
-
     draw(ctx) {
         ctx.fillStyle = "#90f542"
 
@@ -114,6 +113,29 @@ class Alien extends GameObject {
 
     }
 }
+class ShooterAlien extends Alien {
+    constructor(x, y, width, height, color, svg) {
+        super(x, y, width, height, color, svg)
+        this.bullets = Array(20).fill("")
+        this.bulletCounter = 0
+        this.shot = false
+    }
+
+    shoot(ctx) {
+        this.bulletCounter = (this.bulletCounter + 1) % 20
+        let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
+        if (!this.shot) {
+            this.bullets[this.bulletCounter] = new Bullet(this.x - 25, this.y + 13, 10, 20, "#efefef", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
+            console.log("shot!")
+            console.log(this.bullets)
+        }
+        this.shot = true
+    }
+}
+
+
+
+
 
 class Player extends GameObject {
     constructor(x, y, width, height, color, svg = "", guideLine) {
@@ -134,11 +156,6 @@ class Player extends GameObject {
         console.log("shoot!")
     }
     draw(ctx) {
-        // ctx.fillStyle = this.color
-        // ctx.beginPath()
-        // ctx.arc(this.x, this.y, this.width / 2, 20, 2 * Math.PI)
-        // ctx.fill()
-
         let img = document.getElementById("spaceship")
         img.height = this.height
         this.width = img.height
@@ -150,13 +167,8 @@ class Player extends GameObject {
         //clear img
         ctx.fillStyle = gameManager.bg
         ctx.beginPath()
-        ctx.fillRect(this.x - this.width/2, this.y,this.width ,this.height+10)
+        ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height + 10)
         ctx.fill()
-
-
-
-
-
 
         // save
         ctx.save()
@@ -186,7 +198,7 @@ class Player extends GameObject {
     }
     move(dx, dy, ctx) {
         let inBoundX = this.x + this.width / 2 + dx < board.width && this.x - this.width / 2 + dx > 0
-        let inBoundY = this.y + this.height / 2 + dy < board.height && this.y - this.height / 2 + dy > board.height/2
+        let inBoundY = this.y + this.height / 2 + dy < board.height && this.y - this.height / 2 + dy > board.height / 2
         this.x = (inBoundX) ? this.x + dx : this.x
         this.y = (inBoundY) ? this.y + dy : this.y
         this.rotate(-1, -1, ctx)
@@ -208,7 +220,6 @@ document.body.style.cursor = "none"
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX
     mouseY = e.clientY
-
 
     moved = true
 })
@@ -237,6 +248,7 @@ function drawCrossHair(ctx) {
         moved = false
     }
 }
+
 function gameSetup() {
     gameManager.bg = "#101010"
     console.log(ctx)
@@ -275,9 +287,17 @@ function gameSetup() {
     aliens = Array(20).fill("")
     for (let j = 1; j <= 2; j++) {
         for (let i = 0; i < 10; i++) {
-            aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
     }
+
+    // for (let j = 1; j <= 5; j++) {
+    //     for (let i = 0; i < 10; i++) {
+    //         aliens[i + 10 * (j - 1)] = new Alien(40 * i + board.width / 2, 40 * j, 30, 20, "#ffffff", "")
+    //     }
+    // }
+
+
     console.log(aliens)
 
 
@@ -297,43 +317,58 @@ function drawNavBar(score, ctx) {
     ctx.fillText(`Score: ${score}`, board.width - 200, 40)
 
     // draw "HOME" text at home
-
-
     ctx.font = "40px mcfont"
     ctx.fillStyle = "white"
     ctx.fillText(`HOME`, homeBase.x + homeBase.width / 6, homeBase.y + homeBase.height / 2)
 
-
+    ctx.font = "40px mcfont"
+    ctx.fillStyle = "white"
+    ctx.fillText(`Wave: ${waveNumber}`, board.width / 2, 40)
 }
+
+function nextWave(ctx) {
+    waveNumber++;
+    for (let j = 1; j <= 2 + waveNumber; j++) {
+        for (let i = 0; i < 10; i++) {
+            aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+        }
+    }
+}
+
 function gameLoop() {
     if (!paused) {
         ctx.fillStyle = gameManager.bg
         ctx.fillRect(0, 0, board.width, board.height);
         player.draw(ctx)
 
-
         // draw home base
         homeBase.draw(ctx)
 
         if (Health == 0) loseGame()
-
+        let alienBullets = []
         //collision
         for (let i = 0; i < aliens.length; i++) {
+            aliens[i].move([homeBase.x, homeBase.y], ctx)
+            if (aliens[i] instanceof ShooterAlien) {
+                if (((player.x - aliens[i].x) * (player.x - aliens[i].x) + (player.y - aliens[i].y) * (player.y - aliens[i].y)) <= 500 * 500) {
+                    aliens[i].shoot(ctx)
+                    alienBullets.push(aliens[i].bullets)
+                }
+            }
             if (aliens[i].color != gameManager.bg) {
-                aliens[i].move([homeBase.x, homeBase.y], ctx)
                 if (aliens[i].collides(player)) {
                     loseGame()
                 }
                 else if (aliens[i].collides(homeBase)) {
                     if (Health != 0) Health -= 2
                     else if (Health == 0) loseGame()
-                    aliens.splice(i,1)
+                    aliens.splice(i, 1)
                 }
             }
         }
         //movement
-
         for (let i = 0; i < bullets.length; i++) {
+            // move player bullets
             let bullet = bullets[i]
             if (bullet != "" && bullet != undefined) {
                 bullet.move(ctx)
@@ -342,7 +377,6 @@ function gameLoop() {
                     clear = true
                 }
             }
-
             for (let j = 0; j < aliens.length; j++) {
                 if (aliens[j].collides(bullet)) {
                     aliens.splice(j, 1)
@@ -352,13 +386,24 @@ function gameLoop() {
                 }
             }
         }
+
+        // handling shooting bots
+        for (let i = 0; i < alienBullets.length; i++) {
+            for (let j = 0; j < alienBullets[i].length; j++) {
+                if (alienBullets[i][j] != '') {
+                    alienBullets[i][j].move(ctx)
+                    if (player.collides(alienBullets[i][j])) loseGame()
+                }
+            }
+        }
         player.move(displacement[0], displacement[1], ctx)
         drawCrossHair(ctx)
-
+        if (aliens.toString() === '') nextWave(ctx)
         drawNavBar(score, ctx)
     }
 
 }
+
 
 function gameInit() {
     gameSetup()
@@ -369,7 +414,5 @@ function loseGame() {
     console.log("Game Lost!")
     paused = true
 }
-
-
 
 gameInit()
