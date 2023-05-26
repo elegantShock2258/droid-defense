@@ -32,6 +32,21 @@ let displacement = [0, 0]
 let score = 0
 let Health = 100
 
+// TODO:
+// add a trail glow animation when the player moves
+// add a roataion animation when it moves
+
+// make home base able to shoot
+// have 3 waves
+
+// make big boss in wave 3 
+// add poweups 
+// leader board
+// sound
+// end game modal
+
+
+
 class GameObject {
     constructor(x, y, width, height, color, svg = "") {
         this.x = x
@@ -126,6 +141,7 @@ class Player extends GameObject {
 
         let img = document.getElementById("spaceship")
         img.height = this.height
+        this.width = img.height
         ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
 
     }
@@ -134,8 +150,13 @@ class Player extends GameObject {
         //clear img
         ctx.fillStyle = gameManager.bg
         ctx.beginPath()
-        ctx.arc(this.x, this.y + this.height / 2, this.width / 1.3, 0, 2 * Math.PI)
+        ctx.fillRect(this.x - this.width/2, this.y,this.width ,this.height+10)
         ctx.fill()
+
+
+
+
+
 
         // save
         ctx.save()
@@ -156,11 +177,16 @@ class Player extends GameObject {
         ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
 
         ctx.restore()
+        // add trail glow anim
+
+
+
+
 
     }
     move(dx, dy, ctx) {
         let inBoundX = this.x + this.width / 2 + dx < board.width && this.x - this.width / 2 + dx > 0
-        let inBoundY = this.y + this.height / 2 + dy < board.height && this.y - this.height / 2 + dy > 0
+        let inBoundY = this.y + this.height / 2 + dy < board.height && this.y - this.height / 2 + dy > board.height/2
         this.x = (inBoundX) ? this.x + dx : this.x
         this.y = (inBoundY) ? this.y + dy : this.y
         this.rotate(-1, -1, ctx)
@@ -249,21 +275,22 @@ function gameSetup() {
     aliens = Array(20).fill("")
     for (let j = 1; j <= 2; j++) {
         for (let i = 0; i < 10; i++) {
-            // aliens[i + 10 * (j - 1)] = new Alien(90 * Math.abs(i - 5) + board.width / 2.5, 40 * j, 30, 20, "#ffffff", "")
-            aliens[i + 10 * (j - 1)] = new Alien(board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
     }
     console.log(aliens)
 
 
 }
-function drawNavBar(score,  ctx) {
+function drawNavBar(score, ctx) {
     ctx.font = "40px mcfont"
     ctx.fillStyle = "white"
     ctx.fillText("Health: ", 10, 40)
 
     ctx.fillStyle = "red"
+    ctx.strokeStyle = "red"
     ctx.fillRect(190, 15, Health * 4, 25)
+    ctx.strokeRect(190, 15, 100 * 4, 25)
 
     ctx.font = "40px mcfont"
     ctx.fillStyle = "white"
@@ -300,6 +327,7 @@ function gameLoop() {
                 else if (aliens[i].collides(homeBase)) {
                     if (Health != 0) Health -= 2
                     else if (Health == 0) loseGame()
+                    aliens.splice(i,1)
                 }
             }
         }
