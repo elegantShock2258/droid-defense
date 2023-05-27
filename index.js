@@ -34,6 +34,22 @@ let Health = 100
 
 let waveNumber = 1
 
+let powerUpPaused = false
+let poweupsAssets = ["heart.png", "pause.png", "qmark.png"]
+let poweupsMethods = [() => {
+    player.playerHealth = (player.playerHealth > 50) ? 100 : (player.playerHealth + 50) % 100
+    console.log(player.playerHealth)
+}, () => {
+    powerUpPaused = true
+    setTimeout(() => { powerUpPaused = false }, 1000)
+}, () => {
+
+    for (let i = 0; i < aliens.length * Math.random(); i++) {
+        aliens.pop()
+    }
+}]
+
+
 // TODO:
 // add a trail glow animation when the player moves
 // add a roataion animation when it moves
@@ -132,11 +148,6 @@ class ShooterAlien extends Alien {
         this.shot = true
     }
 }
-
-
-
-
-
 class Player extends GameObject {
     constructor(x, y, width, height, color, svg = "", guideLine) {
         super(x, y, width, height, color, svg)
@@ -150,17 +161,27 @@ class Player extends GameObject {
         this.rot = 0
         this.shoot = [this.x + this.width / 2, this.y - 10]
         this.r = Math.sqrt((this.rectCordX - this.x) * (this.rectCordX - this.x) + (this.rectCordY - this.y) * (this.rectCordY - this.y))
+
+        this.playerHealth = 100
     }
 
     shoot() {
         console.log("shoot!")
     }
+
+    damage() {
+        this.playerHealth -= 10
+    }
+
     draw(ctx) {
         let img = document.getElementById("spaceship")
         img.height = this.height
         this.width = img.height
         ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
 
+        ctx.fillStyle = "red"
+        ctx.fillRect(this.x - this.width, this.y + this.height + 20, this.playerHealth, 10)
+        ctx.strokeRect(this.x - this.width, this.y + this.height + 20, 100, 10)
     }
 
     rotate(x = -1, y = -1, ctx) {
@@ -180,7 +201,7 @@ class Player extends GameObject {
                 this.rot = (Math.atan(m)) + 3 * Math.PI / 2
             else
                 this.rot = (Math.atan(m)) + 5 * Math.PI / 2
-            console.log(this.rot, x, y, m)
+            // console.log(this.rot, x, y, m)
         }
         ctx.rotate(this.rot)
         ctx.translate(-(this.x), -(this.y + this.height / 2))
@@ -191,17 +212,53 @@ class Player extends GameObject {
         ctx.restore()
         // add trail glow anim
 
-
-
-
-
     }
     move(dx, dy, ctx) {
+
+        ctx.fillStyle = "red"
+        ctx.fillRect(this.x - this.width, this.y + this.height + 20, this.playerHealth, 10)
+        ctx.strokeRect(this.x - this.width, this.y + this.height + 20, this.playerHealth, 10)
         let inBoundX = this.x + this.width / 2 + dx < board.width && this.x - this.width / 2 + dx > 0
         let inBoundY = this.y + this.height / 2 + dy < board.height && this.y - this.height / 2 + dy > board.height / 2
         this.x = (inBoundX) ? this.x + dx : this.x
         this.y = (inBoundY) ? this.y + dy : this.y
         this.rotate(-1, -1, ctx)
+
+        if (this.playerHealth === 0) loseGame()
+    }
+}
+class PowerUp extends Alien {
+    constructor(x, y, width, height, color, svg = "", guideLine) {
+        super(x, y, width, height, color, svg)
+        this.poweupNumber = Math.floor((poweupsMethods.length) * Math.random())
+        this.imageElement = 1
+    }
+
+    apply() {
+        poweupsMethods[this.poweupNumber]()
+    }
+    draw(ctx) {
+        this.imageElement = document.getElementById(poweupsAssets[this.poweupNumber])
+        this.imageElement.src = poweupsAssets[this.poweupNumber]
+        this.imageElement.height = this.height
+        this.width = this.imageElement.height
+        ctx.drawImage(this.imageElement, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
+    }
+    move(playerDir, ctx) {
+        let mod = Math.sqrt(((this.x - playerDir[0]) * (this.x - playerDir[0])) + ((this.y - playerDir[1]) * (this.y - playerDir[1])))
+        let normalisedCoords = [-(this.x - playerDir[0]) / mod, -(this.y - playerDir[1]) / mod]
+
+        let dx = normalisedCoords[0]
+        let dy = normalisedCoords[1]
+
+        this.height = 80
+        let inBoundX = this.x + this.width / 2 + dx < board.width && this.x - this.width / 2 + dx > 0
+        let inBoundY = this.y + this.height / 2 + dy < board.height && this.y - this.height / 2 + dy > board.height / 2
+        // this.x = (inBoundX) ? this.x + dx : this.x
+        // this.y = (inBoundY) ? this.y + dy : this.y
+
+        this.y += playerDir[1]
+        this.draw(ctx)
     }
 }
 
@@ -256,7 +313,6 @@ function gameSetup() {
     player = new Player(board.width / 2, board.height - playerRadius, playerRadius, playerRadius, guideLine)
     homeBase = new GameObject(board.width - 400, board.height - 250, 150, 150, "green", "")
 
-
     console.log(player)
     document.onclick = (e) => {
         bulletCounter = (bulletCounter + 1) % bulletsMax
@@ -287,7 +343,7 @@ function gameSetup() {
     aliens = Array(20).fill("")
     for (let j = 1; j <= 2; j++) {
         for (let i = 0; i < 10; i++) {
-            aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
     }
 
@@ -297,10 +353,7 @@ function gameSetup() {
     //     }
     // }
 
-
     console.log(aliens)
-
-
 }
 function drawNavBar(score, ctx) {
     ctx.font = "40px mcfont"
@@ -340,15 +393,18 @@ function gameLoop() {
         ctx.fillStyle = gameManager.bg
         ctx.fillRect(0, 0, board.width, board.height);
         player.draw(ctx)
-
         // draw home base
         homeBase.draw(ctx)
 
         if (Health == 0) loseGame()
         let alienBullets = []
+        let dirn = (powerUpPaused) ? [0, 0] : [player.x, player.y]
         //collision
         for (let i = 0; i < aliens.length; i++) {
-            aliens[i].move([homeBase.x, homeBase.y], ctx)
+            // aliens[i].move([homeBase.x, homeBase.y], ctx)
+            if (aliens[i] instanceof PowerUp && !powerUpPaused) aliens[i].move([0, 1], ctx)
+            else aliens[i].move(dirn, ctx)
+
             if (aliens[i] instanceof ShooterAlien) {
                 if (((player.x - aliens[i].x) * (player.x - aliens[i].x) + (player.y - aliens[i].y) * (player.y - aliens[i].y)) <= 500 * 500) {
                     aliens[i].shoot(ctx)
@@ -356,7 +412,7 @@ function gameLoop() {
                 }
             }
             if (aliens[i].color != gameManager.bg) {
-                if (aliens[i].collides(player)) {
+                if (aliens[i].collides(player) && aliens[i] instanceof Alien && !(aliens[i] instanceof PowerUp)) {
                     loseGame()
                 }
                 else if (aliens[i].collides(homeBase)) {
@@ -379,6 +435,7 @@ function gameLoop() {
             }
             for (let j = 0; j < aliens.length; j++) {
                 if (aliens[j].collides(bullet)) {
+                    if (aliens[j] instanceof PowerUp) aliens[j].apply()
                     aliens.splice(j, 1)
                     bullets[i] = ""
                     score++
@@ -392,7 +449,7 @@ function gameLoop() {
             for (let j = 0; j < alienBullets[i].length; j++) {
                 if (alienBullets[i][j] != '') {
                     alienBullets[i][j].move(ctx)
-                    if (player.collides(alienBullets[i][j])) loseGame()
+                    if (player.collides(alienBullets[i][j])) player.damage()
                 }
             }
         }
