@@ -345,7 +345,7 @@ function gameSetup() {
             // powerup
             // shooter alien
             // alien
-            let rand = Math.floor(120 * Math.random())
+            let rand = Math.floor(10000 * Math.random())
             if (rand % 3 == 0)
                 aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
             else if (rand % 3 == 1)
