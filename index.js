@@ -107,8 +107,8 @@ class Bullet extends GameObject {
         ctx.fillRect(this.x, this.y, this.width, this.height)
     }
 
-    move(ctx) {
-        super.move(20 * this.direction[0], 20 * this.direction[1], ctx)
+    move(ctx, scalar = 20, direction = this.direction) {
+        super.move(scalar * direction[0], scalar * direction[1], ctx)
     }
 }
 
@@ -132,6 +132,7 @@ class Alien extends GameObject {
 class ShooterAlien extends Alien {
     constructor(x, y, width, height, color, svg) {
         super(x, y, width, height, color, svg)
+        this.color = "#dd0000"
         this.bullets = Array(20).fill("")
         this.bulletCounter = 0
         this.shot = false
@@ -148,6 +149,30 @@ class ShooterAlien extends Alien {
         this.shot = true
     }
 }
+
+class ShootingHomingAlien extends ShooterAlien {
+    constructor(x, y, width, height, color, svg) {
+        super(x, y, width, height, color, svg)
+        this.color = "#660000"
+    }
+
+    // shoot(ctx) {
+    //     this.bulletCounter = (this.bulletCounter + 1) % 20
+    //     let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
+    //     if (!this.shot) {
+    //         this.bullets[this.bulletCounter] = new Bullet(this.x - 25, this.y + 13, 10, 20, "yellow", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
+    //         console.log("homing shot!")
+    //         console.log(this.bullets)
+    //     }
+    //     this.shot = true
+    // }
+}
+
+
+
+
+
+
 class Player extends GameObject {
     constructor(x, y, width, height, color, svg = "", guideLine) {
         super(x, y, width, height, color, svg)
@@ -334,7 +359,6 @@ function gameSetup() {
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "l") {
             if (!paused) { displacement = [scale, 0] }
         }
-        console.log(displacement)
     })
 
     //chekcing
@@ -344,14 +368,17 @@ function gameSetup() {
         for (let i = 0; i < 10; i++) {
             // powerup
             // shooter alien
+            // shooter alien (homing)
             // alien
             let rand = Math.floor(10000 * Math.random())
-            if (rand % 3 == 0)
+            if (rand % 4 == 0)
                 aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-            else if (rand % 3 == 1)
+            else if (rand % 4 == 1)
                 aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-            else if (rand % 3 == 2)
+            else if (rand % 4 == 2)
                 aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 3)
+                aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
     }
 
@@ -389,15 +416,29 @@ function drawNavBar(score, ctx) {
 
 function nextWave(ctx) {
     waveNumber++;
-    for (let j = 1; j <= 2 + waveNumber; j++) {
+    for (let j = 1; j <= 2; j++) {
         for (let i = 0; i < 10; i++) {
-            aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            // powerup
+            // shooter alien
+            // shooter alien (homing)
+            // alien
+            let rand = Math.floor(10000 * Math.random())
+            if (rand % 4 == 0)
+                aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 1)
+                aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 2)
+                aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 3)
+                aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
     }
 }
 
 function gameLoop() {
     if (!paused) {
+        let homingMissileBotIndices = []
+
         ctx.fillStyle = gameManager.bg
         ctx.fillRect(0, 0, board.width, board.height);
         player.draw(ctx)
@@ -410,13 +451,16 @@ function gameLoop() {
         //collision
         for (let i = 0; i < aliens.length; i++) {
             // aliens[i].move([homeBase.x, homeBase.y], ctx)
-            if (aliens[i] instanceof PowerUp && !powerUpPaused) aliens[i].move([0, 1], ctx)
+            if (aliens[i] instanceof PowerUp && !powerUpPaused) (aliens[i].y >= board.height) ? aliens.splice(i, 1) : aliens[i].move([0, 1], ctx)
+            else if (aliens[i] instanceof ShooterAlien) aliens[i].move([player.x, player.y], ctx)
+            else if (aliens[i] instanceof Alien) aliens[i].move([homeBase.x, homeBase.y], ctx)
+            else if (aliens[i] instanceof ShootingHomingAlien) aliens[i].move([player.x, player.y], ctx)
             else aliens[i].move(dirn, ctx)
 
-            if (aliens[i] instanceof ShooterAlien) {
+            if (aliens[i] instanceof ShooterAlien || aliens[i] instanceof ShootingHomingAlien) {
                 if (((player.x - aliens[i].x) * (player.x - aliens[i].x) + (player.y - aliens[i].y) * (player.y - aliens[i].y)) <= 500 * 500) {
                     aliens[i].shoot(ctx)
-                    alienBullets.push(aliens[i].bullets)
+                    alienBullets.push(aliens[i])
                 }
             }
             if (aliens[i].color != gameManager.bg) {
@@ -454,10 +498,18 @@ function gameLoop() {
 
         // handling shooting bots
         for (let i = 0; i < alienBullets.length; i++) {
-            for (let j = 0; j < alienBullets[i].length; j++) {
-                if (alienBullets[i][j] != '') {
-                    alienBullets[i][j].move(ctx)
-                    if (player.collides(alienBullets[i][j])) player.damage()
+            for (let j = 0; j < alienBullets[i].bullets.length; j++) {
+                if (alienBullets[i].bullets[j] != '') {
+                    if (alienBullets[i] instanceof ShootingHomingAlien) {
+                        let mod = Math.sqrt((player.x - alienBullets[i].bullets[j].x) * (player.x - alienBullets[i].bullets[j].x) + (player.y - alienBullets[i].bullets[j].y) * (player.y - alienBullets[i].bullets[j].y))
+                        alienBullets[i].bullets[j].move(ctx, 5, [(player.x - alienBullets[i].bullets[j].x) / mod, (player.y - alienBullets[i].bullets[j].y) / mod])
+                        console.log(alienBullets[i].bullets[j])
+                    }
+                    else alienBullets[i].bullets[j].move(ctx, 5)
+                    if (player.collides(alienBullets[i].bullets[j])) {
+                        alienBullets[i].bullets.splice(j, 1)
+                        player.damage()
+                    }
                 }
             }
         }
