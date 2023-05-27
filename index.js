@@ -214,7 +214,6 @@ class Player extends GameObject {
 
     }
     move(dx, dy, ctx) {
-
         ctx.fillStyle = "red"
         ctx.fillRect(this.x - this.width, this.y + this.height + 20, this.playerHealth, 10)
         ctx.strokeRect(this.x - this.width, this.y + this.height + 20, this.playerHealth, 10)
@@ -314,7 +313,7 @@ function gameSetup() {
     homeBase = new GameObject(board.width - 400, board.height - 250, 150, 150, "green", "")
 
     console.log(player)
-    document.onclick = (e) => {
+    document.onclick = () => {
         bulletCounter = (bulletCounter + 1) % bulletsMax
         bullets[bulletCounter] = (new Bullet(player.x, player.y, 5, 10, "", "", bulletsDirection))
     }
@@ -343,7 +342,16 @@ function gameSetup() {
     aliens = Array(20).fill("")
     for (let j = 1; j <= 2; j++) {
         for (let i = 0; i < 10; i++) {
-            aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            // powerup
+            // shooter alien
+            // alien
+            let rand = Math.floor(120 * Math.random())
+            if (rand % 3 == 0)
+                aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 3 == 1)
+                aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 3 == 2)
+                aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
     }
 
