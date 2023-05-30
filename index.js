@@ -401,6 +401,9 @@ function gameSetup() {
                 displacement = [0, scale]
             }
         }
+        if (e.key === "p") {
+            paused = !paused
+        }
         if (e.key === "ArrowUp" || e.key === "w" || e.key === "k") {
             if (!paused) {
                 displacement = [0, -scale]
@@ -468,7 +471,7 @@ async function nextWave(ctx) {
     if (waveNumber === 4) {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "white"
-        ctx.fillText(`BOSS LEVEL`,board.width / 2 - 180, board.height / 2 + 45)
+        ctx.fillText(`BOSS LEVEL`, board.width / 2 - 180, board.height / 2 + 45)
 
         await delay()
 
@@ -599,11 +602,15 @@ async function gameLoop() {
                         let mod = Math.sqrt((player.x - alienBullets[i].bullets[j].x) * (player.x - alienBullets[i].bullets[j].x) + (player.y - alienBullets[i].bullets[j].y) * (player.y - alienBullets[i].bullets[j].y))
                         alienBullets[i].bullets[j].move(ctx, 5, [(player.x - alienBullets[i].bullets[j].x) / mod, (player.y - alienBullets[i].bullets[j].y) / mod])
                     }
-                    else alienBullets[i].bullets[j].move(ctx, 5)
+                    else {
+                        alienBullets[i].bullets[j].move(ctx, 5)
+                    }
                     if (player.collides(alienBullets[i].bullets[j])) {
-                        alienBullets[i].bullets.splice(j, 1)
+                        alienBullets[i].bullets[j] = ''
                         player.damage()
                     }
+                } else {
+                    console.log(alienBullets[i].bullets)
                 }
             }
         }
@@ -619,7 +626,7 @@ async function gameLoop() {
                     for (let j = 0; j < aliens.length; j++) {
                         if (aliens[j].collides(homeBaseBullets[i]) && !(aliens[j] instanceof PowerUp)) {
                             aliens.splice(j, 1)
-                            // console.log("me pew pew the alien")
+                            console.log("me pew pew the alien")
                         }
                     }
                 }
@@ -632,6 +639,10 @@ async function gameLoop() {
         if (aliens.toString() === '') nextWave(ctx)
     } else if (powerUpPaused) {
         player.move(displacement[0], displacement[1], ctx)
+        requestAnimationFrame(gameLoop)
+    } else {
+        console.log("paused")
+        requestAnimationFrame(gameLoop)
     }
 
 }
