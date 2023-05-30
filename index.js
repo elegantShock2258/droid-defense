@@ -401,6 +401,10 @@ function gameSetup() {
                 displacement = [0, scale]
             }
         }
+        if (e.key === "p"){
+            paused = !paused
+        }
+
         if (e.key === "ArrowUp" || e.key === "w" || e.key === "k") {
             if (!paused) {
                 displacement = [0, -scale]
@@ -468,7 +472,7 @@ async function nextWave(ctx) {
     if (waveNumber === 4) {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "white"
-        ctx.fillText(`BOSS LEVEL`,board.width / 2 - 180, board.height / 2 + 45)
+        ctx.fillText(`BOSS LEVEL`, board.width / 2 - 180, board.height / 2 + 45)
 
         await delay()
 
@@ -630,8 +634,9 @@ async function gameLoop() {
         drawCrossHair(ctx)
         drawNavBar(score, ctx)
         if (aliens.toString() === '') nextWave(ctx)
-    } else if (powerUpPaused) {
-        player.move(displacement[0], displacement[1], ctx)
+    } else if (paused) {
+
+        requestAnimationFrame(gameLoop)
     }
 
 }
