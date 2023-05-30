@@ -415,24 +415,23 @@ function gameSetup() {
     bullets = Array(20).fill("")
     homeBaseBullets = Array(20).fill("")
     aliens = Array(20).fill("")
-    aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
-    // for (let j = 1; j <= 2; j++) {
-    //     for (let i = 0; i < 10; i++) {
-    //         // powerup
-    //         // shooter alien
-    //         // shooter alien (homing)
-    //         // alien
-    //         let rand = Math.floor(10000 * Math.random())
-    //         if (rand % 4 == 0)
-    //             aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(poweupsMethods.length * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-    //         else if (rand % 4 == 1)
-    //             aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-    //         else if (rand % 4 == 2)
-    //             aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-    //         else if (rand % 4 == 3)
-    //             aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-    //     }
-    // }
+    for (let j = 1; j <= 2; j++) {
+        for (let i = 0; i < 10; i++) {
+            // powerup
+            // shooter alien
+            // shooter alien (homing)
+            // alien
+            let rand = Math.floor(10000 * Math.random())
+            if (rand % 4 == 0)
+                aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(poweupsMethods.length * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 1)
+                aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 2)
+                aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 3)
+                aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+        }
+    }
     player.draw(ctx)
 
 }
@@ -466,27 +465,38 @@ async function nextWave(ctx) {
     ctx.fillStyle = gameManager.bg
     ctx.fillRect(0, 0, board.width, board.height)
 
-    ctx.font = "90px mcfont"
-    ctx.fillStyle = "white"
-    ctx.fillText(`Wave: ${waveNumber}`, board.width / 2 - 180, board.height / 2 + 45)
+    if (waveNumber === 4) {
+        ctx.font = "90px mcfont"
+        ctx.fillStyle = "white"
+        ctx.fillText(`BOSS LEVEL`,board.width / 2 - 180, board.height / 2 + 45)
 
-    await delay()
+        await delay()
 
-    for (let j = 1; j <= 2; j++) {
-        for (let i = 0; i < 10; i++) {
-            let rand = Math.floor(10000 * Math.random())
-            if (rand % 4 == 0)
-                // powerup
-                aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-            else if (rand % 4 == 1)
-                // shooter alien
-                aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-            else if (rand % 4 == 2)
-                // shooter alien (homing)
-                aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-            else if (rand % 4 == 3)
-                // alien
-                aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+        aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
+
+    } else {
+        ctx.font = "90px mcfont"
+        ctx.fillStyle = "white"
+        ctx.fillText(`Wave: ${waveNumber}`, board.width / 2 - 180, board.height / 2 + 45)
+
+        await delay()
+
+        for (let j = 1; j <= 2; j++) {
+            for (let i = 0; i < 10; i++) {
+                let rand = Math.floor(10000 * Math.random())
+                if (rand % 4 == 0)
+                    // powerup
+                    aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+                else if (rand % 4 == 1)
+                    // shooter alien
+                    aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+                else if (rand % 4 == 2)
+                    // shooter alien (homing)
+                    aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+                else if (rand % 4 == 3)
+                    // alien
+                    aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            }
         }
     }
 }
