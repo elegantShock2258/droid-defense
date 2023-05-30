@@ -223,11 +223,15 @@ class Player extends GameObject {
         if (x != -1) {
             let m = (y - player.y) / (x - player.x)
             if (m > 0)
-                this.rot = (Math.atan(m)) + 3 * Math.PI / 2
+                this.rot = (Math.atan(m)) - Math.PI / 2
             else
-                this.rot = (Math.atan(m)) + 5 * Math.PI / 2
+                this.rot = (Math.atan(m)) + Math.PI / 2
             // console.log(this.rot, x, y, m)
+            if (y > this.y) {
+                this.rot += Math.PI
+            }
         }
+
         ctx.rotate(this.rot)
         ctx.translate(-(this.x), -(this.y + this.height / 2))
         let img = document.getElementById("spaceship")
@@ -401,7 +405,7 @@ function gameSetup() {
                 displacement = [0, scale]
             }
         }
-        if (e.key === "p"){
+        if (e.key === "p") {
             paused = !paused
         }
 
