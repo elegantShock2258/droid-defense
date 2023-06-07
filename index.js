@@ -52,17 +52,10 @@ let poweupsMethods = [() => {
 }]
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
+let leaderBoard = []
 
 // TODO:
-// add a trail glow animation when the player moves
-// add a roataion animation when it moves
 
-// make home base able to shoot
-// have 3 waves
-
-// make big boss in wave 3 
-// add poweups 
-// leader board
 // sound
 // end game modal
 
@@ -118,17 +111,19 @@ class Alien extends GameObject {
     constructor(x, y, width, height, color, svg = "", direction = [0, 1]) {
         super(x, y, width, height, color, svg)
         this.direction = direction
+        this.name = "alien-img"
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.color
-        ctx.fillRect(this.x, this.y, this.width, this.height)
+        let img = document.getElementById(this.name) // can just use a class field
+        ctx.drawImage(img, this.x - this.width , this.y - this.height / 2, 5 * this.width, 5.8 * this.height)
     }
     move(playerDir, ctx) {
         let mod = Math.sqrt(((this.x - playerDir[0]) * (this.x - playerDir[0])) + ((this.y - playerDir[1]) * (this.y - playerDir[1])))
         let normalisedCoords = [-(this.x - playerDir[0]) / mod, -(this.y - playerDir[1]) / mod]
-        super.move(normalisedCoords[0], normalisedCoords[1], ctx)
-
+        this.x += normalisedCoords[0]
+        this.y += normalisedCoords[1]
+        this.draw(ctx)
     }
 }
 class ShooterAlien extends Alien {
@@ -138,27 +133,30 @@ class ShooterAlien extends Alien {
         this.bullets = Array(20).fill("")
         this.bulletCounter = 0
         this.shot = false
+
+        this.name = "shooter-img"
     }
 
     shoot(ctx) {
         this.bulletCounter = (this.bulletCounter + 1) % 20
         let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
         if (!this.shot) {
-            this.bullets[this.bulletCounter] = new Bullet(this.x - 25, this.y + 13, 10, 20, "#efefef", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
+            this.bullets[this.bulletCounter] = new Bullet(this.x + 5 * this.width / 2, this.y + 5.8 * this.height / 2, 10, 20, "#efefef", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
             console.log("hehe i shot!")
             if (this instanceof ShootingHomingAlien) console.log("hehe i shot homing missile!")
             console.log(this.bullets)
         }
         this.shot = true
     }
+
 }
 
 class ShootingHomingAlien extends ShooterAlien {
     constructor(x, y, width, height, color, svg) {
         super(x, y, width, height, color, svg)
         this.color = "#660000"
+        this.name = "homing-img"
     }
-
     // shoot(ctx) {
     //     this.bulletCounter = (this.bulletCounter + 1) % 20
     //     let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
@@ -198,9 +196,7 @@ class Player extends GameObject {
 
     draw(ctx) {
         let img = document.getElementById("spaceship")
-        img.height = this.height
-        this.width = img.height
-        ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
+        ctx.drawImage(img, this.x - this.width / 2, this.y, 2 * this.width, 2 * this.height)
 
         ctx.fillStyle = "red"
         ctx.strokeStyle = "red"
@@ -233,10 +229,13 @@ class Player extends GameObject {
         }
 
         ctx.rotate(this.rot)
-        ctx.translate(-(this.x), -(this.y + this.height / 2))
+        ctx.translate(-(this.x + this.width / 2), -(this.y + this.height))
+        // let img = document.getElementById("spaceship")
+        // img.height = this.height
+        // ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
         let img = document.getElementById("spaceship")
-        img.height = this.height
-        ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
+        ctx.drawImage(img, this.x - this.width / 2, this.y, 2 * this.width, 2 * this.height)
+
 
         ctx.restore()
         // add trail glow anim
@@ -273,7 +272,7 @@ class PowerUp extends Alien {
         this.imageElement.src = poweupsAssets[this.poweupNumber]
         this.imageElement.height = this.height
         this.width = this.imageElement.height
-        ctx.drawImage(this.imageElement, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
+        ctx.drawImage(this.imageElement, this.x - this.width / 2, this.y, this.width, this.height)
     }
     move(playerDir, ctx) {
         let mod = Math.sqrt(((this.x - playerDir[0]) * (this.x - playerDir[0])) + ((this.y - playerDir[1]) * (this.y - playerDir[1])))
@@ -359,11 +358,18 @@ function drawCrossHair(ctx) {
 
     bulletsDirection = mouse
 
-    ctx.fillStyle = "#0000ff80"
-    ctx.strokeStyle = gameManager.bg
-    ctx.beginPath()
-    ctx.arc(mouseX, mouseY, 15, 0, 2 * Math.PI)
-    ctx.fill()
+    // ctx.fillStyle = "#0000ff80"
+    // ctx.strokeStyle = gameManager.bg
+    // ctx.beginPath()
+    // ctx.arc(mouseX, mouseY, 15, 0, 2 * Math.PI)
+    // ctx.fill()
+
+    let imageElement = document.getElementById("crosshair.png")
+    imageElement.height = 6
+    let width = imageElement.width
+    ctx.drawImage(imageElement, mouseX - width / 2, mouseY, width, 100 * imageElement.height / width)
+
+
 
     if (moved) {
         player.rotate(mouseX, mouseY, ctx)
@@ -375,14 +381,25 @@ function drawCrossHair(ctx) {
 }
 
 function gameSetup() {
+    // setup spaceship asset
+
+    // <img src="spaceship.png" id="spaceship" alt="can't find spaceship"></img>
+    let assetPath = `Spaceships/Spaceships - ${Math.floor(234 * Math.random()) % 3 + 1}.png`
+    let imageElement = document.createElement("img")
+    imageElement.src = assetPath
+    imageElement.id = "spaceship"
+    document.body.appendChild(imageElement)
+
     gameManager.bg = "#101010"
     guideLine = new GameObject(90, board.height - playerRadius, board.width - 180, 3, "#303030")
-    player = new Player(board.width / 2, board.height - playerRadius, playerRadius, playerRadius, guideLine)
+    player = new Player(board.width / 2, board.height - playerRadius, 90, 90, guideLine)
     homeBase = new GameObject(board.width - 400, board.height - 250, 150, 150, "green", "")
     document.onclick = (e) => {
         if (!lost) {
             bulletCounter = (bulletCounter + 1) % bulletsMax
-            bullets[bulletCounter] = (new Bullet(player.x, player.y, 5, 10, "", "", bulletsDirection))
+            let centerX = player.x
+            let centerY = player.y + player.height / 2
+            bullets[bulletCounter] = (new Bullet(centerX, centerY, 5, 10, "", "", bulletsDirection))
         } else {
             let eventX = e.clientX
             let eventY = e.clientY
@@ -478,7 +495,7 @@ async function nextWave(ctx) {
         ctx.fillStyle = "white"
         ctx.fillText(`BOSS LEVEL`, board.width / 2 - 180, board.height / 2 + 45)
 
-        await delay()
+        await delay(1500)
 
         aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
 
@@ -510,9 +527,15 @@ async function nextWave(ctx) {
 }
 
 async function gameLoop() {
+
+    let imageElement = document.getElementById("bg-img")
+    imageElement.height = window.innerHeight
+    ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
+
     if (!paused && !powerUpPaused) {
-        ctx.fillStyle = gameManager.bg
-        ctx.fillRect(0, 0, board.width, board.height);
+
+        // ctx.fillStyle = gameManager.bg
+        // ctx.fillRect(0, 0, board.width, board.height);
         // draw home base
         homeBase.draw(ctx)
 
