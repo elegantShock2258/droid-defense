@@ -115,8 +115,8 @@ class Alien extends GameObject {
     }
 
     draw(ctx) {
-        let img = document.getElementById(this.name) // can just use a class field
-        ctx.drawImage(img, this.x - this.width , this.y - this.height / 2, 5 * this.width, 5.8 * this.height)
+        let img = document.getElementById(this.name)
+        ctx.drawImage(img, this.x - this.width, this.y - this.height / 2, 5 * this.width, 5.8 * this.height)
     }
     move(playerDir, ctx) {
         let mod = Math.sqrt(((this.x - playerDir[0]) * (this.x - playerDir[0])) + ((this.y - playerDir[1]) * (this.y - playerDir[1])))
@@ -130,25 +130,28 @@ class ShooterAlien extends Alien {
     constructor(x, y, width, height, color, svg) {
         super(x, y, width, height, color, svg)
         this.color = "#dd0000"
-        this.bullets = Array(20).fill("")
-        this.bulletCounter = 0
-        this.shot = false
+
+        this.bullet = ""
 
         this.name = "shooter-img"
     }
 
     shoot(ctx) {
-        this.bulletCounter = (this.bulletCounter + 1) % 20
         let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
-        if (!this.shot) {
-            this.bullets[this.bulletCounter] = new Bullet(this.x + 5 * this.width / 2, this.y + 5.8 * this.height / 2, 10, 20, "#efefef", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
-            console.log("hehe i shot!")
-            if (this instanceof ShootingHomingAlien) console.log("hehe i shot homing missile!")
-            console.log(this.bullets)
+        if (this.bullet == "") {
+            this.bullet = new Bullet(this.x + 5 * this.width / 2, this.y + 5.8 * this.height / 2, 10, 20, "#efefef", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
         }
-        this.shot = true
     }
-
+    move(playerDir, ctx) {
+        super.move(playerDir, ctx)
+        if (this.bullet != "" && this.bullet != " ") {
+            this.bullet.move(ctx, 2.5)
+            if (this.bullet.collides(player)) {
+                player.damage()
+                this.bullet = " "
+            }
+        }
+    }
 }
 
 class ShootingHomingAlien extends ShooterAlien {
@@ -157,16 +160,26 @@ class ShootingHomingAlien extends ShooterAlien {
         this.color = "#660000"
         this.name = "homing-img"
     }
-    // shoot(ctx) {
-    //     this.bulletCounter = (this.bulletCounter + 1) % 20
-    //     let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
-    //     if (!this.shot) {
-    //         this.bullets[this.bulletCounter] = new Bullet(this.x - 25, this.y + 13, 10, 20, "yellow", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
-    //         console.log("homing shot!")
-    //         console.log(this.bullets)
-    //     }
-    //     this.shot = true
-    // }
+
+    shoot(ctx) {
+        let mod = Math.sqrt(((player.x - this.x) * (player.x - this.x)) + ((player.y - this.y) * (player.y - this.y)))
+        if (this.bullet == "") {
+            this.bullet = new Bullet(this.x + 5 * this.width / 2, this.y + 5.8 * this.height / 2, 10, 20, "#efefef", "", [(player.x - this.x) / mod, (player.y - this.y) / mod])
+        }
+    }
+
+    move(playerDir, ctx) {
+        super.move(playerDir, ctx)
+        let mod = Math.sqrt(((player.x - this.bullet.x) * (player.x - this.bullet.x)) + ((player.y - this.bullet.y) * (player.y - this.bullet.y)))
+        if (this.bullet != "" && this.bullet != " ") {
+            this.bullet.direction = [(player.x - this.bullet.x) / mod, (player.y - this.bullet.y) / mod]
+            this.bullet.move(ctx, 2.5)
+            if (this.bullet.collides(player)) {
+                this.bullet = " "
+                player.damage()
+            }
+        }
+    }
 }
 
 class Player extends GameObject {
@@ -206,12 +219,6 @@ class Player extends GameObject {
     }
 
     rotate(x = -1, y = -1, ctx) {
-        //clear img
-        // ctx.fillStyle = gameManager.bg
-        // ctx.beginPath()
-        // ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height + 10)
-        // ctx.fill()
-
         // save
         ctx.save()
         ctx.translate(this.x, this.y + this.height / 2)
@@ -230,16 +237,11 @@ class Player extends GameObject {
 
         ctx.rotate(this.rot)
         ctx.translate(-(this.x + this.width / 2), -(this.y + this.height))
-        // let img = document.getElementById("spaceship")
-        // img.height = this.height
-        // ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, 100 * this.height / this.width)
         let img = document.getElementById("spaceship")
         ctx.drawImage(img, this.x - this.width / 2, this.y, 2 * this.width, 2 * this.height)
 
 
         ctx.restore()
-        // add trail glow anim
-
     }
     move(dx, dy, ctx) {
         ctx.fillStyle = "red"
@@ -267,6 +269,7 @@ class PowerUp extends Alien {
     apply() {
         poweupsMethods[this.poweupNumber]()
     }
+
     draw(ctx) {
         this.imageElement = document.getElementById(poweupsAssets[this.poweupNumber])
         this.imageElement.src = poweupsAssets[this.poweupNumber]
@@ -274,6 +277,7 @@ class PowerUp extends Alien {
         this.width = this.imageElement.height
         ctx.drawImage(this.imageElement, this.x - this.width / 2, this.y, this.width, this.height)
     }
+
     move(playerDir, ctx) {
         let mod = Math.sqrt(((this.x - playerDir[0]) * (this.x - playerDir[0])) + ((this.y - playerDir[1]) * (this.y - playerDir[1])))
         let normalisedCoords = [-(this.x - playerDir[0]) / mod, -(this.y - playerDir[1]) / mod]
@@ -461,6 +465,8 @@ function gameSetup() {
 
 }
 function drawNavBar(score, ctx) {
+
+
     ctx.font = "40px mcfont"
     ctx.fillStyle = "white"
     ctx.fillText("Health: ", 10, 40)
@@ -468,7 +474,7 @@ function drawNavBar(score, ctx) {
     ctx.fillStyle = "red"
     ctx.strokeStyle = "red"
     ctx.fillRect(190, 15, Health * 4, 25)
-    ctx.strokeRect(190, 15, 100 * 4, 25)
+    ctx.strokeRect(190, 15, 400, 25)
 
     ctx.font = "40px mcfont"
     ctx.fillStyle = "white"
@@ -533,9 +539,6 @@ async function gameLoop() {
     ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
 
     if (!paused && !powerUpPaused) {
-
-        // ctx.fillStyle = gameManager.bg
-        // ctx.fillRect(0, 0, board.width, board.height);
         // draw home base
         homeBase.draw(ctx)
 
@@ -543,7 +546,6 @@ async function gameLoop() {
             (ctx)
             return
         }
-        let alienBullets = []
         let dirn = (powerUpPaused) ? [0, 0] : [player.x, player.y]
         //collision
         for (let i = 0; i < aliens.length; i++) {
@@ -561,7 +563,7 @@ async function gameLoop() {
                 if (aliens[i] instanceof ShooterAlien || aliens[i] instanceof ShootingHomingAlien) {
                     if (((player.x - aliens[i].x) * (player.x - aliens[i].x) + (player.y - aliens[i].y) * (player.y - aliens[i].y)) <= 500 * 500) {
                         aliens[i].shoot(ctx)
-                        alienBullets.push(aliens[i])
+                        // alienBullets.push(aliens[i])
                     }
                 }
 
@@ -621,24 +623,6 @@ async function gameLoop() {
                 }
             }
         }
-
-        // handling shooting bots
-        for (let i = 0; i < alienBullets.length; i++) {
-            for (let j = 0; j < alienBullets[i].bullets.length; j++) {
-                if (alienBullets[i].bullets[j] != '') {
-                    if (alienBullets[i] instanceof ShootingHomingAlien) {
-                        let mod = Math.sqrt((player.x - alienBullets[i].bullets[j].x) * (player.x - alienBullets[i].bullets[j].x) + (player.y - alienBullets[i].bullets[j].y) * (player.y - alienBullets[i].bullets[j].y))
-                        alienBullets[i].bullets[j].move(ctx, 5, [(player.x - alienBullets[i].bullets[j].x) / mod, (player.y - alienBullets[i].bullets[j].y) / mod])
-                    }
-                    else alienBullets[i].bullets[j].move(ctx, 5)
-                    if (player.collides(alienBullets[i].bullets[j])) {
-                        alienBullets[i].bullets.splice(j, 1)
-                        player.damage()
-                    }
-                }
-            }
-        }
-
         for (let i = 0; i < homeBaseBullets.length; i++) {
             if (homeBaseBullets[i] != "") {
 
@@ -662,10 +646,9 @@ async function gameLoop() {
         drawNavBar(score, ctx)
         if (aliens.toString() === '') nextWave(ctx)
     } else if (paused) {
-
+        loseGame(ctx)
         requestAnimationFrame(gameLoop)
     }
-
 }
 
 
@@ -674,57 +657,62 @@ function gameInit() {
     requestAnimationFrame(gameLoop)
 }
 
+function createModal(ctx, color, width, height, text) {
+
+    ctx.fillStyle = color
+    ctx.strokeStyle = "black"
+    ctx.lineWidth = 15
+    ctx.fillRect((board.width - width) / 2, (board.height - width) / 2, width, height)
+    ctx.strokeRect((board.width - width) / 2, (board.height - width) / 2, width, height)
+}
+
 function loseGame(ctx) {
-    paused = true
-    lost = true
-    console.log("Game Lost!")
+    document.body.style.cursor = "default"
+    let width = 750
+    let height = 750
 
-    modal = document.createElement("div")
-    modal.classList.add('modal')
-    modal.id = "startup"
+    createModal(ctx, "#550000", width, height)
 
-    let mainlayout = document.createElement("div")
-    mainlayout.classList.add('dialogueLayoutLost')
+    ctx.font = "160px mcfont"
+    ctx.fillStyle = "#990000"
+    ctx.fillText("You Lost!", (board.width - width) / 2 + ctx.measureText("You Lost!").width / 2 - 350, (board.height - height) / 2 + 150)
 
+    ctx.font = "50px mcfont"
+    ctx.fillStyle = "red"
+    ctx.fillText("You ran out of health!", (board.width - width) / 2 + 95, (board.height - height) / 2 + 350)
 
-    let h1_3 = document.createElement("h1")
-    h1_3.classList.add('modalSelect')
-    h1_3.textContent = "CREDITS : 0 | INSERT CREDIT(S)"
-    h1_3.style.fontSize = "1em"
-    h1_3.style.textShadow = "none"
-    h1_3.style.animation = "credits 0.7s infinite cubic-bezier(1,0,0,1)"
+    ctx.font = "90px mcfont"
+    ctx.fillStyle = "#8b0000"
+    ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
 
-    let h1 = document.createElement("h1")
-    h1.classList.add('h1Lost')
-    h1.textContent = "Sequence"
-    let h1_2 = document.createElement("h1")
-    h1_2.classList.add('h1Lost')
-    h1_2.textContent = "Safari"
-    h1_2.style.alignSelf = "flex-end"
+    ctx.font = "90px mcfont"
+    ctx.fillStyle = "#dc143c"
+    ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
 
-    let uiDiv = document.createElement("div")
-    uiDiv.classList.add('uiDev')
+    //Quit button
+    ctx.font = "90px mcfont"
+    ctx.fillStyle = "#8b0000"
 
-    lostText = document.createElement("div")
-    lostText.classList.add('modalSelect')
-    lostText.classList.add('youLostText')
+    let quitButtonX0 = (board.width - width) / 2 +40
+    let quitButtonX1 = (board.width - width) / 2 + 2.8*ctx.measureText("Quit").width 
+    let quitButtonY0 = (board.height - height) / 2 + 600 - 90
+    let quitButtonY1 = (board.height - height) / 2 + 600 
 
-    lostText.textContent = "You Lost!"
+    let inBoundXQuit = (quitButtonX0 < mouseX && mouseX < (board.width - quitButtonX1))
+    let inBoundYQuit = ((quitButtonY0) < mouseY && mouseY < (quitButtonY1))
 
-    settings = document.createElement("div")
-    settings.classList.add('modalSelect')
-
-    uiDiv.appendChild(settings)
-    mainlayout.appendChild(h1)
-    mainlayout.appendChild(h1_2)
-    mainlayout.appendChild(h1_3)
-    mainlayout.appendChild(uiDiv)
-    modal.appendChild(mainlayout)
-    modal.onclick = () => { location.reload() }
-
-    document.body.appendChild(modal)
-
-    document.body.style.cursor = "pointer"
+    if (inBoundXQuit && inBoundYQuit) {
+        console.log("blue Called?")
+        ctx.font = "90px mcfont"
+        ctx.fillStyle = "blue"
+        ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
+    } else if (!inBoundXQuit || !inBoundYQuit) {
+        console.log("Called?")
+        ctx.font = "90px mcfont"
+        ctx.fillStyle = "#8b0000"
+        ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
+    }
+    if(!paused) paused = true
 }
 
 gameInit()
