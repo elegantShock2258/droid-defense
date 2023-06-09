@@ -53,7 +53,6 @@ let poweupsMethods = [() => {
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 let leaderBoard = []
-
 // TODO:
 
 // sound
@@ -429,7 +428,9 @@ function gameSetup() {
         if (e.key === "p") {
             paused = !paused
         }
-
+        if (e.key === "q" || paused) {
+            window.close()
+        }
         if (e.key === "ArrowUp" || e.key === "w" || e.key === "k") {
             if (!paused) {
                 displacement = [0, -scale]
@@ -533,12 +534,11 @@ async function nextWave(ctx) {
 }
 
 async function gameLoop() {
-
-    let imageElement = document.getElementById("bg-img")
-    imageElement.height = window.innerHeight
-    ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
-
     if (!paused && !powerUpPaused) {
+        let imageElement = document.getElementById("bg-img")
+        imageElement.height = window.innerHeight
+        ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
+
         // draw home base
         homeBase.draw(ctx)
 
@@ -645,9 +645,28 @@ async function gameLoop() {
         drawCrossHair(ctx)
         drawNavBar(score, ctx)
         if (aliens.toString() === '') nextWave(ctx)
-    } else if (paused) {
+        paused = true
+    } else if (lost) {
         loseGame(ctx)
-        console.log("h")
+    } else if (paused) {
+        // draw pause screen
+        ctx.fillStyle = "#3636360e"
+        ctx.fillRect(0, 0, board.width, board.height)
+
+        ctx.font = "200px mcfont"
+        ctx.fillStyle = "white"
+        let cen = ctx.measureText("PAUSED").width
+        ctx.fillText("PAUSED", (board.width - cen) / 2, (board.height) / 2)
+
+        ctx.font = "50px mcfont"
+        ctx.fillStyle = "white"
+        ctx.fillText("Press 'P' to resume", (board.width - cen + ctx.measureText("Press 'p' to resume").width / 2) / 2, (board.height) / 2 + 100)
+
+        ctx.font = "50px mcfont"
+        ctx.fillStyle = "white"
+        ctx.fillText("Press 'Q' to quit", (board.width - cen + ctx.measureText("Press 'Q' to resume quit").width / 2) / 2, (board.height) / 2 + 200)
+
+        requestAnimationFrame(gameLoop)
     }
 }
 
@@ -694,12 +713,10 @@ function loseGame() {
     let inBoundYQuit = ((quitButtonY0) < mouseY && mouseY < (quitButtonY1))
 
     if (inBoundXQuit && inBoundYQuit) {
-        console.log("blue?")
         ctx.font = "90px mcfont"
         ctx.fillStyle = "blue"
         ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
     } else if (!inBoundXQuit || !inBoundYQuit) {
-        console.log("red.")
         ctx.font = "90px mcfont"
         ctx.fillStyle = "#8b0000"
         ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
@@ -719,8 +736,6 @@ function loseGame() {
     let inBoundXNewGame = (newGameButtonX0 < mouseX && mouseX < (newGameButtonX1))
 
 
-
-
     if (inBoundXNewGame && inBoundYQuit) {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "green"
@@ -731,7 +746,23 @@ function loseGame() {
         ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
     }
 
+
+    // handling text "button" onclicks
+    document.onclick = (e) => {
+        // quit
+        let inBoundXQuit = (quitButtonX0 < mouseX && mouseX < (board.width - quitButtonX1))
+        let inBoundYQuit = ((quitButtonY0) < mouseY && mouseY < (quitButtonY1))
+
+        // new game
+        let inBoundXNewGameOnclick = (newGameButtonX0 < e.clientX && e.clientX < (newGameButtonX1))
+
+
+        if (inBoundXQuit && inBoundYQuit) window.close()
+        else if (inBoundXNewGameOnclick && inBoundYQuit) window.location.reload()
+    }
+
     requestAnimationFrame(loseGame)
+    lost = true
 }
 
 gameInit()
