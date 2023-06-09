@@ -381,7 +381,7 @@ function drawCrossHair(ctx) {
 function gameSetup() {
     // setup spaceship asset
 
-    let assetPath = `Spaceships/Spaceships - ${Math.floor(234 * Math.random()) % 3 + 1}.png`
+    let assetPath = `/Spaceships/Spaceships - ${Math.floor(234 * Math.random()) % 3 + 1}.png`
     let imageElement = document.createElement("img")
     imageElement.src = assetPath
     imageElement.id = "spaceship"
