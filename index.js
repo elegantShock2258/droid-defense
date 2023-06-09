@@ -647,7 +647,7 @@ async function gameLoop() {
         if (aliens.toString() === '') nextWave(ctx)
     } else if (paused) {
         loseGame(ctx)
-        requestAnimationFrame(gameLoop)
+        console.log("h")
     }
 }
 
@@ -666,7 +666,7 @@ function createModal(ctx, color, width, height, text) {
     ctx.strokeRect((board.width - width) / 2, (board.height - width) / 2, width, height)
 }
 
-function loseGame(ctx) {
+function loseGame() {
     document.body.style.cursor = "default"
     let width = 750
     let height = 750
@@ -681,38 +681,57 @@ function loseGame(ctx) {
     ctx.fillStyle = "red"
     ctx.fillText("You ran out of health!", (board.width - width) / 2 + 95, (board.height - height) / 2 + 350)
 
-    ctx.font = "90px mcfont"
-    ctx.fillStyle = "#8b0000"
-    ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
-
-    ctx.font = "90px mcfont"
-    ctx.fillStyle = "#dc143c"
-    ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
-
     //Quit button
     ctx.font = "90px mcfont"
     ctx.fillStyle = "#8b0000"
 
-    let quitButtonX0 = (board.width - width) / 2 +40
-    let quitButtonX1 = (board.width - width) / 2 + 2.8*ctx.measureText("Quit").width 
+    let quitButtonX0 = (board.width - width) / 2 + 40
+    let quitButtonX1 = (board.width - width) / 2 + 2.8 * ctx.measureText("Quit").width
     let quitButtonY0 = (board.height - height) / 2 + 600 - 90
-    let quitButtonY1 = (board.height - height) / 2 + 600 
+    let quitButtonY1 = (board.height - height) / 2 + 600
 
     let inBoundXQuit = (quitButtonX0 < mouseX && mouseX < (board.width - quitButtonX1))
     let inBoundYQuit = ((quitButtonY0) < mouseY && mouseY < (quitButtonY1))
 
     if (inBoundXQuit && inBoundYQuit) {
-        console.log("blue Called?")
+        console.log("blue?")
         ctx.font = "90px mcfont"
         ctx.fillStyle = "blue"
         ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
     } else if (!inBoundXQuit || !inBoundYQuit) {
-        console.log("Called?")
+        console.log("red.")
         ctx.font = "90px mcfont"
         ctx.fillStyle = "#8b0000"
         ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
     }
-    if(!paused) paused = true
+
+    // new game
+    ctx.font = "90px mcfont"
+    ctx.fillStyle = "#dc143c"
+    // ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
+
+
+    let newGameButtonX0 = (board.width - width) / 2 + 80 + ctx.measureText("Quit").width + 30
+    let newGameButtonX1 = newGameButtonX0 + (width - 320)
+    let newGameButtonY0 = (board.height - height) / 2 + 600 - 60
+    let newGameButtonY1 = (board.height - height) / 2 + 600
+
+    let inBoundXNewGame = (newGameButtonX0 < mouseX && mouseX < (newGameButtonX1))
+
+
+
+
+    if (inBoundXNewGame && inBoundYQuit) {
+        ctx.font = "90px mcfont"
+        ctx.fillStyle = "green"
+        ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
+    } else if (!inBoundXNewGame || !inBoundYQuit) {
+        ctx.font = "90px mcfont"
+        ctx.fillStyle = "#dc143c"
+        ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
+    }
+
+    requestAnimationFrame(loseGame)
 }
 
 gameInit()
