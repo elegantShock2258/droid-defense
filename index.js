@@ -671,7 +671,7 @@ function createModal(ctx, color, width, height, text) {
     ctx.strokeRect((board.width - width) / 2, (board.height - width) / 2, width, height)
 }
 
-function loseGame() {
+function loseGame(text) {
     document.body.style.cursor = "default"
     let width = 750
     let height = 750
@@ -684,7 +684,7 @@ function loseGame() {
 
     ctx.font = "50px mcfont"
     ctx.fillStyle = "red"
-    ctx.fillText("You ran out of health!", (board.width - width) / 2 + 95, (board.height - height) / 2 + 350)
+    ctx.fillText(text, (board.width - width) / 2 + 95, (board.height - height) / 2 + 350)
 
     //Quit button
     ctx.font = "90px mcfont"
