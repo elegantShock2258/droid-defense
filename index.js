@@ -157,6 +157,9 @@ class ShooterAlien extends Alien {
             }
         }
     }
+    collides(obj) {
+
+    }
 }
 class ShootingHomingAlien extends ShooterAlien {
     constructor(x, y, width, height, color, svg) {
@@ -296,6 +299,13 @@ class PowerUp extends Alien {
         this.y += playerDir[1]
         this.draw(ctx)
     }
+    collides(obj) {
+        return (this.x < obj.x + obj.width
+            && this.x + this.width > obj.x
+            && this.y < obj.y + obj.height
+            && this.y + this.height > obj.y);
+    }
+
 }
 
 class Boss extends ShooterAlien {
