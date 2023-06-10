@@ -298,8 +298,8 @@ class PowerUp extends Alien {
     }
 
     collides(obj) {
-        return (this.x < obj.x + obj.width
-            && this.x + this.width > obj.x
+        return (this.x  - this.width/2< obj.x + obj.width
+            && this.x + this.width/2 > obj.x
             && this.y < obj.y + obj.height
             && this.y + this.height > obj.y);
     }
@@ -512,10 +512,6 @@ async function nextWave(ctx) {
     //     aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
 
     // } else {
-        ctx.font = "90px mcfont"
-        ctx.fillStyle = "white"
-        ctx.fillText(`Wave: ${waveNumber}`, board.width / 2 - 180, board.height / 2 + 45)
-
         await delay()
 
         for (let j = 1; j <= 2; j++) {
