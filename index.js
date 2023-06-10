@@ -298,8 +298,8 @@ class PowerUp extends Alien {
     }
 
     collides(obj) {
-        return (this.x  - this.width/2< obj.x + obj.width
-            && this.x + this.width/2 > obj.x
+        return (this.x - this.width / 2 < obj.x + obj.width
+            && this.x + this.width / 2 > obj.x
             && this.y < obj.y + obj.height
             && this.y + this.height > obj.y);
     }
@@ -512,23 +512,23 @@ async function nextWave(ctx) {
     //     aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
 
     // } else {
-        for (let j = 1; j <= waveNumber; j++) {
-            for (let i = 0; i < 10; i++) {
-                let rand = Math.floor(10000 * Math.random())
-                if (rand % 4 == 0)
-                    // powerup
-                    aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-                else if (rand % 4 == 1)
-                    // shooter alien
-                    aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-                else if (rand % 4 == 2)
-                    // shooter alien (homing)
-                    aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-                else if (rand % 4 == 3)
-                    // alien
-                    aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
-            }
+    for (let j = 1; j <= waveNumber; j++) {
+        for (let i = 0; i < 10; i++) {
+            let rand = Math.floor(10000 * Math.random())
+            if (rand % 4 == 0)
+                // powerup
+                aliens[i + 10 * (j - 1)] = new PowerUp(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 1)
+                // shooter alien
+                aliens[i + 10 * (j - 1)] = new ShooterAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 2)
+                // shooter alien (homing)
+                aliens[i + 10 * (j - 1)] = new Alien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
+            else if (rand % 4 == 3)
+                // alien
+                aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
         }
+    }
     // }
 }
 
@@ -700,15 +700,15 @@ function loseGame() {
     ctx.font = "90px mcfont"
     ctx.fillStyle = "#8b0000"
 
-    let quitButtonX0 = (board.width - width) / 2 + 40
+    let quitButtonX0 = (board.width - width) / 2
     let quitButtonX1 = (board.width - width) / 2 + 2.8 * ctx.measureText("Quit").width
-    let quitButtonY0 = (board.height - height) / 2 + 600 - 90
+    let quitButtonY0 = (board.height - height) / 2 - 90
     let quitButtonY1 = (board.height - height) / 2 + 600
 
     let inBoundXQuit = (quitButtonX0 < mouseX && mouseX < (board.width - quitButtonX1))
     let inBoundYQuit = ((quitButtonY0) < mouseY && mouseY < (quitButtonY1))
 
-    if (inBoundXQuit && inBoundYQuit) {
+    if (inBoundXQuit) {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "blue"
         ctx.fillText("Quit", (board.width - width) / 2 + ctx.measureText("Quit").width / 2 - 40, (board.height - height) / 2 + 600)
@@ -730,7 +730,7 @@ function loseGame() {
     let inBoundXNewGame = (newGameButtonX0 < mouseX && mouseX < (newGameButtonX1))
 
 
-    if (inBoundXNewGame && inBoundYQuit) {
+    if (inBoundXNewGame) {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "green"
         ctx.fillText("New Game", (board.width - width) / 2 + ctx.measureText("New Game").width / 2 + 80, (board.height - height) / 2 + 600)
@@ -745,7 +745,7 @@ function loseGame() {
     document.onclick = (e) => {
         // quit
         let inBoundXQuit = (quitButtonX0 < mouseX && mouseX < (board.width - quitButtonX1))
-        let inBoundYQuit = ((quitButtonY0) < mouseY && mouseY < (quitButtonY1))
+        let inBoundYQuit = ((quitButtonY0) - 800 < mouseY && mouseY < (quitButtonY1) + 800)
 
         // new game
         let inBoundXNewGameOnclick = (newGameButtonX0 < e.clientX && e.clientX < (newGameButtonX1))
