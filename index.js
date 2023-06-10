@@ -157,9 +157,6 @@ class ShooterAlien extends Alien {
             }
         }
     }
-    collides(obj) {
-
-    }
 }
 class ShootingHomingAlien extends ShooterAlien {
     constructor(x, y, width, height, color, svg) {
@@ -299,13 +296,6 @@ class PowerUp extends Alien {
         this.y += playerDir[1]
         this.draw(ctx)
     }
-    collides(obj) {
-        return (this.x < obj.x + obj.width
-            && this.x + this.width > obj.x
-            && this.y < obj.y + obj.height
-            && this.y + this.height > obj.y);
-    }
-
 }
 
 class Boss extends ShooterAlien {
@@ -503,16 +493,16 @@ function drawNavBar(score, ctx) {
 async function nextWave(ctx) {
     waveNumber++;
 
-    if (waveNumber === 4) {
-        ctx.font = "90px mcfont"
-        ctx.fillStyle = "white"
-        ctx.fillText(`BOSS LEVEL`, board.width / 2 - 180, board.height / 2 + 45)
+    // if (waveNumber === 4) {
+    //     ctx.font = "90px mcfont"
+    //     ctx.fillStyle = "white"
+    //     ctx.fillText(`BOSS LEVEL`, board.width / 2 - 180, board.height / 2 + 45)
 
-        await delay(1500)
+    //     await delay(1500)
 
-        aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
+    //     aliens[0] = new Boss(800, 20, 2, 3, "#454334", "")
 
-    } else {
+    // } else {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "white"
         ctx.fillText(`Wave: ${waveNumber}`, board.width / 2 - 180, board.height / 2 + 45)
@@ -536,7 +526,7 @@ async function nextWave(ctx) {
                     aliens[i + 10 * (j - 1)] = new ShootingHomingAlien(((Math.floor(4 * Math.random())) % 2 == 0 ? 1 : -1) * board.width * Math.random(), -board.height * Math.random(), 30, 20, "#ffffff", "")
             }
         }
-    }
+    // }
 }
 
 async function gameLoop() {
