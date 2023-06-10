@@ -530,8 +530,8 @@ async function nextWave(ctx) {
 
 async function gameLoop() {
     let imageElement = document.getElementById("bg-img")
-    imageElement.height = window.innerHeight
-    ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
+    imageElement.height = board.height
+    ctx.drawImage(imageElement, 0, 0, board.width, board.height)
 
     if (!paused && !powerUpPaused) {
         // draw home base
