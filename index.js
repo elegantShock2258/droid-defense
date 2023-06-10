@@ -514,7 +514,7 @@ async function nextWave(ctx) {
     // } else {
         await delay()
 
-        for (let j = 1; j <= 2; j++) {
+        for (let j = 1; j <= waveNumber; j++) {
             for (let i = 0; i < 10; i++) {
                 let rand = Math.floor(10000 * Math.random())
                 if (rand % 4 == 0)
