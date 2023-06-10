@@ -38,7 +38,7 @@ let score = 0
 let Health = 100
 
 let waveNumber = 1
-
+let message = ""
 let powerUpPaused = false
 let poweupsAssets = ["heart.png", "qmark.png"]
 let poweupsMethods = [() => {
@@ -319,7 +319,8 @@ class Boss extends ShooterAlien {
     damage(ctx) {
         this.BossHealth -= 5
         if (this.BossHealth <= 0) {
-            loseGame(ctx)
+            message = "You Won"
+            loseGame()
         }
     }
 
@@ -538,7 +539,8 @@ async function gameLoop() {
         homeBase.draw(ctx)
 
         if (Health == 0) {
-            loseGame(ctx)
+            message = "You Ran Out of Health!"
+            loseGame()
             return
         }
         let dirn = (powerUpPaused) ? [0, 0] : [player.x, player.y]
@@ -562,12 +564,17 @@ async function gameLoop() {
                 }
                 if (aliens[i] != undefined && aliens[i].color != gameManager.bg) {
                     if (aliens[i].collides(player) && aliens[i] instanceof Alien && !(aliens[i] instanceof PowerUp)) {
-                        loseGame("you collided with alien")
+                        message = "you collided with alien"
+                        loseGame()
                         return
                     }
                     else if (aliens[i].collides(homeBase)) {
                         if (Health != 0) Health -= 2
-                        else if (Health == 0) loseGame(ctx)
+                        else if (Health == 0) {
+                            message = "You ran out of health!"
+                            loseGame()
+
+                        }
                         aliens.splice(i, 1)
                     }
                 }
@@ -633,7 +640,7 @@ async function gameLoop() {
         drawNavBar(score, ctx)
         if (aliens.toString() === '') nextWave(ctx)
     } else if (lost) {
-        loseGame(ctx)
+        loseGame(message)
     } else if (paused) {
         // draw pause screen
         ctx.fillStyle = "#3636360e"
@@ -671,7 +678,7 @@ function createModal(ctx, color, width, height, text) {
     ctx.strokeRect((board.width - width) / 2, (board.height - width) / 2, width, height)
 }
 
-function loseGame(text) {
+function loseGame() {
     document.body.style.cursor = "default"
     let width = 750
     let height = 750
@@ -684,7 +691,7 @@ function loseGame(text) {
 
     ctx.font = "50px mcfont"
     ctx.fillStyle = "red"
-    ctx.fillText(text, (board.width - width) / 2 + 95, (board.height - height) / 2 + 350)
+    ctx.fillText(message, (board.width - width) / 2 + 95, (board.height - height) / 2 + 350)
 
     //Quit button
     ctx.font = "90px mcfont"
