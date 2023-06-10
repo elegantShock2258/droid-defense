@@ -562,7 +562,7 @@ async function gameLoop() {
                 }
                 if (aliens[i] != undefined && aliens[i].color != gameManager.bg) {
                     if (aliens[i].collides(player) && aliens[i] instanceof Alien && !(aliens[i] instanceof PowerUp)) {
-                        loseGame(ctx)
+                        loseGame("you collided with alien")
                         return
                     }
                     else if (aliens[i].collides(homeBase)) {
@@ -598,7 +598,6 @@ async function gameLoop() {
                 if (aliens[j] != "" && bullet != undefined && aliens[j].collides(bullet)) {
                     console.log(aliens[j])
                     if (aliens[j] instanceof Boss) {
-                        console.log("huh?")
                         bullets[i] = ""
                         aliens[j].damage()
                     } else {
