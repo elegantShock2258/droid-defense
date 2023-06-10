@@ -127,8 +127,8 @@ class Alien extends GameObject {
     collides(obj) {
         return ((this.x + this.width / 2) < obj.x + obj.width
             && (this.x + this.width / 2) + 2 * this.width > obj.x
-            && (this.y + 1.5*this.height) < obj.y + obj.height
-            && (this.y + 1.5*this.height)+ 2*this.height > obj.y);
+            && (this.y + 1.5 * this.height) < obj.y + obj.height
+            && (this.y + 1.5 * this.height) + 2 * this.height > obj.y);
     }
 }
 class ShooterAlien extends Alien {
@@ -492,9 +492,6 @@ function drawNavBar(score, ctx) {
 async function nextWave(ctx) {
     waveNumber++;
 
-    ctx.fillStyle = gameManager.bg
-    ctx.fillRect(0, 0, board.width, board.height)
-
     if (waveNumber === 4) {
         ctx.font = "90px mcfont"
         ctx.fillStyle = "white"
@@ -532,11 +529,11 @@ async function nextWave(ctx) {
 }
 
 async function gameLoop() {
-    if (!paused && !powerUpPaused) {
-        let imageElement = document.getElementById("bg-img")
-        imageElement.height = window.innerHeight
-        ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
+    let imageElement = document.getElementById("bg-img")
+    imageElement.height = window.innerHeight
+    ctx.drawImage(imageElement, 0, 0, window.innerWidth, window.innerHeight)
 
+    if (!paused && !powerUpPaused) {
         // draw home base
         homeBase.draw(ctx)
 
@@ -563,7 +560,6 @@ async function gameLoop() {
                         aliens[i].shoot(ctx)
                     }
                 }
-
                 if (aliens[i] != undefined && aliens[i].color != gameManager.bg) {
                     if (aliens[i].collides(player) && aliens[i] instanceof Alien && !(aliens[i] instanceof PowerUp)) {
                         loseGame(ctx)
