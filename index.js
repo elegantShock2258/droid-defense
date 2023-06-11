@@ -328,8 +328,7 @@ class Boss extends ShooterAlien {
     damage(ctx) {
         this.BossHealth -= 5
         if (this.BossHealth <= 0) {
-            message = "You Won"
-            loseGame()
+            aliens = []
         }
     }
 
